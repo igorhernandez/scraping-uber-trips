@@ -19,4 +19,4 @@ function getUberTrips(trips) {
     return newTrips
 }
 
-// getUberTrips(trips)
+// JSON.stringify(getUberTrips(trips))
