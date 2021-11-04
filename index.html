@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Uber trips</title>
+  </head>
+  <body>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 16px;
+        font-size: 1rem;
+      }
+
+      th,
+      td {
+        border: 1px solid #ccc;
+        text-align: center;
+      }
+
+      tr:nth-child(2n + 1) {
+        background-color: rgb(240, 240, 240);
+      }
+
+      table {
+        border-collapse: collapse;
+      }
+
+      #total {
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+      }
+    </style>
+    <p id="total"></p>
+    <div id="history"></div>
+    <script>
+      fetch("./trips.json")
+        .then((res) => res.json())
+        .then((res) => {
+          var html = `
+          <table>
+            <tr>
+                <th>
+                    Data
+                </th>
+                <th>
+                    Preço
+                </th>
+                <th>
+                    Cidade
+                </th>
+                <th>
+                    Distancia
+                </th>
+                <th>
+                    Tipo
+                </th>
+                <th>
+                    Saida
+                </th>
+                <th>
+                    Destino
+                </th>`;
+          const trips = res.map((trip) => {
+            html += `<tr>`;
+            Object.keys(trip).map((key) => (html += `<td>${trip[key]}</td>`));
+            return {
+              ...trip,
+              price: Number(trip.price.replace("R$", "")),
+            };
+            html += `</tr>`;
+          });
+          html += "</table>";
+          document.getElementById("history").innerHTML = html;
+          const filteredTrips = trips.filter(({ time }) => {
+            const startDate = new Date("2021-10-01");
+            const endDate = new Date("2021-10-31");
+            const tripDate = new Date(time);
+            return tripDate >= startDate && tripDate <= endDate;
+          });
+          console.log(filteredTrips);
+          const totalPrice = filteredTrips
+            .reduce((acc, cur) => acc + cur.price, 0)
+            .toFixed(2);
+          document.getElementById(
+            "total"
+          ).innerHTML = `Outubro - R$ ${totalPrice}`;
+        });
+    </script>
+  </body>
+</html>
