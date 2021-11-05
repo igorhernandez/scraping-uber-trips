@@ -34,13 +34,47 @@
         text-align: center;
       }
     </style>
+    <input type="date" id="initial-date" />
+    <input type="date" id="final-date" />
+    <button onclick="filterTrips()">Filtrar</button>
     <p id="total"></p>
     <div id="history"></div>
     <script>
-      fetch("./trips.json")
-        .then((res) => res.json())
-        .then((res) => {
-          var html = `
+      const monthsKeys = {
+        1: "Janeiro",
+        2: "Fevereiro",
+        3: "Março",
+        4: "Abril",
+        5: "Maio",
+        6: "Junho",
+        7: "Julho",
+        8: "Agosto",
+        9: "Setembro",
+        10: "Outubro",
+        11: "Novembro",
+        12: "Dezembro",
+      };
+
+      const currencyFormatter = (numero) => {
+        const numAux = Number(numero).toFixed(2).split(".");
+        numAux[0] = `R$ ${numAux[0].split(/(?=(?:...)*$)/).join(".")}`;
+        return numAux.join(",");
+      };
+
+      function filterTrips() {
+        const startDate = new Date(
+          document.getElementById("initial-date").value
+        );
+        const endDate = new Date(document.getElementById("final-date").value);
+        console.log({ startDate, endDate });
+        const month = `De ${monthsKeys[startDate.getMonth() + 1]} até ${
+          monthsKeys[endDate.getMonth() + 1]
+        }`;
+        console.log(month);
+        fetch("./trips.json")
+          .then((res) => res.json())
+          .then((res) => {
+            var html = `
           <table>
             <tr>
                 <th>
@@ -64,31 +98,38 @@
                 <th>
                     Destino
                 </th>`;
-          const trips = res.map((trip) => {
-            html += `<tr>`;
-            Object.keys(trip).map((key) => (html += `<td>${trip[key]}</td>`));
-            return {
-              ...trip,
-              price: Number(trip.price.replace("R$", "")),
-            };
-            html += `</tr>`;
+
+            const filteredTrips = res.filter(({ time }) => {
+              const tripDate = new Date(time);
+              return tripDate >= startDate && tripDate <= endDate;
+            });
+
+            const trips = filteredTrips.map((trip) => {
+              return {
+                ...trip,
+                price: Number(trip.price.replace("R$", "")),
+              };
+            });
+            trips.map((trip) => {
+              html += `<tr>`;
+
+              Object.keys(trip).map((key) => {
+                html += `<td>
+                ${key === "price" ? currencyFormatter(trip[key]) : trip[key]}
+              </td>`;
+              });
+
+              html += `</tr>`;
+            });
+            html += "</table>";
+            document.getElementById("history").innerHTML = html;
+
+            const totalPrice = trips.reduce((acc, cur) => acc + cur.price, 0);
+            document.getElementById(
+              "total"
+            ).innerHTML = `${month} - ${currencyFormatter(totalPrice)}`;
           });
-          html += "</table>";
-          document.getElementById("history").innerHTML = html;
-          const filteredTrips = trips.filter(({ time }) => {
-            const startDate = new Date("2021-10-01");
-            const endDate = new Date("2021-10-31");
-            const tripDate = new Date(time);
-            return tripDate >= startDate && tripDate <= endDate;
-          });
-          console.log(filteredTrips);
-          const totalPrice = filteredTrips
-            .reduce((acc, cur) => acc + cur.price, 0)
-            .toFixed(2);
-          document.getElementById(
-            "total"
-          ).innerHTML = `Outubro - R$ ${totalPrice}`;
-        });
+      }
     </script>
   </body>
 </html>
