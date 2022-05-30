@@ -1,5 +1,5 @@
 //get data from 'https://myprivacy.uber.com/privacy/exploreyourdata/trips' with:
-const trips = Array.from(document.getElementsByClassName('af em'))
+const trips = Array.from(document.getElementsByClassName('af es'))
 
 
 function getUberTrips(trips) {
