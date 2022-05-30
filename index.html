@@ -100,7 +100,8 @@
                 </th>`;
 
             const filteredTrips = res.filter(({ time }) => {
-              const tripDate = new Date(time);
+              const treatedTime = time.replace("\\n", "\n");
+              const tripDate = new Date(treatedTime);
               return tripDate >= startDate && tripDate <= endDate;
             });
 
